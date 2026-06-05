@@ -73,6 +73,23 @@ table.dt thead th{background:var(--g4);color:#fff;position:sticky;top:0}
   color:#fff;border-radius:8px;padding:8px 11px;font-size:12.5px;width:230px;outline:none}
 #ds-bar .ds-url::placeholder{color:#bcd3bc}
 #ds-bar .ds-url:focus{border-color:var(--g1);background:rgba(255,255,255,.15)}
+/* ===== Pantalla de acceso ===== */
+#login-overlay{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#0E3E12,#1B5E20)}
+#login-overlay .lo-card{background:#fff;border-radius:16px;padding:34px 30px;width:min(92vw,360px);
+  box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center;font-family:'Segoe UI',Arial,sans-serif}
+#login-overlay h2{margin:0 0 4px;color:#1B5E20;font-size:21px}
+#login-overlay p{margin:0 0 18px;color:#6a7a6a;font-size:13px}
+#login-overlay input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid #cdd8cd;
+  border-radius:9px;font-size:15px;outline:none;margin-bottom:12px}
+#login-overlay input:focus{border-color:var(--g1)}
+#login-overlay button{width:100%;padding:12px;border:none;border-radius:9px;background:var(--g2);color:#fff;
+  font:600 15px 'Segoe UI',Arial,sans-serif;cursor:pointer;transition:.15s}
+#login-overlay button:hover{background:var(--g1);color:#0E3E12}
+#login-overlay button:disabled{opacity:.6;cursor:default}
+#login-overlay .lo-msg{color:#e53935;font-size:12.5px;min-height:16px;margin-bottom:8px}
+#login-overlay .lo-alt{margin-top:16px;font-size:12px;color:#789}
+#login-overlay .lo-alt a{color:var(--g2);cursor:pointer;text-decoration:underline}
 </style></head><body><aside id="sidebar"><div class="brand"><svg width="120" height="46" viewBox="0 0 300 112" xmlns="http://www.w3.org/2000/svg"><g transform="translate(6,4)"><polygon points="40,0 80,14 40,28 0,14" fill="#8BC34A" opacity="0.65"/><polygon points="40,14 80,28 40,42 0,28" fill="#7CB342" opacity="0.8"/><polygon points="40,28 80,42 40,56 0,42" fill="#4CAF50"/><polygon points="40,42 80,56 40,70 0,56" fill="#2E7D32"/><polygon points="40,56 80,70 40,84 0,70" fill="#1B5E20"/><polygon points="40,70 80,84 40,98 0,84" fill="#0E3E12"/></g><g transform="translate(110,30)" font-family="Segoe UI,Arial" font-weight="700"><rect x="0" y="0" width="46" height="46" fill="none" stroke="#fff" stroke-width="3"/><text x="23" y="35" font-size="38" fill="#fff" text-anchor="middle">g</text><text x="56" y="35" font-size="34" fill="#fff">accanto</text></g></svg><span class="ttl">Tablero de Control</span></div><nav><div class="grp">General</div><a href="#resumen" class="active">Resumen Ejecutivo</a><div class="grp">Ventas acumuladas</div><a href="#acc-cons">Consolidado</a><a href="#acc-proy">Por proyecto</a><div class="grp">Promesas</div><a href="#prom-cons">Consolidado</a><a href="#prom-proy">Por proyecto</a><div class="grp">Ventas mensuales</div><a href="#ventas-cons">Consolidado</a><a href="#ventas-proy">Por proyecto</a><div class="grp">Escrituras mensuales</div><a href="#escr-cons">Consolidado</a><a href="#escr-proy">Por proyecto</a><div class="grp">Entregas mensuales</div><a href="#entr-cons">Consolidado</a><a href="#entr-proy">Por proyecto</a></nav></aside><button id="togglebtn" title="Mostrar/ocultar menú">☰</button><div id="main"><header class="hd"><div class="row1"><div><svg width="150" height="56" viewBox="0 0 300 112" xmlns="http://www.w3.org/2000/svg"><g transform="translate(6,4)"><polygon points="40,0 80,14 40,28 0,14" fill="#8BC34A" opacity="0.65"/><polygon points="40,14 80,28 40,42 0,28" fill="#7CB342" opacity="0.8"/><polygon points="40,28 80,42 40,56 0,42" fill="#4CAF50"/><polygon points="40,42 80,56 40,70 0,56" fill="#2E7D32"/><polygon points="40,56 80,70 40,84 0,70" fill="#1B5E20"/><polygon points="40,70 80,84 40,98 0,84" fill="#0E3E12"/></g><g transform="translate(110,30)" font-family="Segoe UI,Arial" font-weight="700"><rect x="0" y="0" width="46" height="46" fill="none" stroke="#fff" stroke-width="3"/><text x="23" y="35" font-size="38" fill="#fff" text-anchor="middle">g</text><text x="56" y="35" font-size="34" fill="#fff">accanto</text></g></svg></div><div><h1>Tablero de Control</h1><div class="sub">Grupo Accanto · Seguimiento de proyectos</div></div></div><div class="meta"><div class="m">Fecha de corte<b class="cut-lbl">MAY-2026</b></div><div class="m">Fuente de datos<b>HITOS CONSOLIDADOS</b></div><div class="m">Proyectos<b id="k-proj">6 · VIS / NO VIS / Comercio</b></div></div></header><div id="ds-bar"><div class="ds-left"><span class="ds-dot" id="ds-dot"></span><span id="ds-status">Sin datos &mdash; carga tu Excel o conéctate a Google Sheets.</span></div><div class="ds-actions"><label class="ds-btn ds-file">📁 Cargar Excel<input type="file" id="ds-excel" accept=".xlsx,.xlsm" hidden></label><input type="text" id="ds-url" class="ds-url" placeholder="URL Apps Script (/exec)…"><button class="ds-btn ds-connect" id="ds-connect">Conectar Sheets</button></div></div><div id="ctrl"><div class="kpi"><div class="lbl">Fecha corte</div><div class="val" id="k-cut">—</div></div><div class="kpi"><div class="lbl">Und. VIS</div><div class="val" id="k-visU">—</div></div><div class="kpi"><div class="lbl">Und. NO VIS</div><div class="val" id="k-novisU">—</div></div><div class="kpi"><div class="lbl">Und. Comercio</div><div class="val" id="k-comU">—</div></div><div class="kpi"><div class="lbl">Total unidades</div><div class="val" id="k-escr">—</div></div><div class="kpi"><div class="lbl">Valor VIS</div><div class="val sm" id="k-visV">—</div></div><div class="kpi"><div class="lbl">Valor NO VIS</div><div class="val sm" id="k-novisV">—</div></div><div class="kpi"><div class="lbl">Valor Comercio</div><div class="val sm" id="k-comV">—</div></div><div class="kpi"><div class="lbl">Valor total</div><div class="val sm" id="k-val">—</div></div><div class="kpi"><div class="lbl">Estado</div><div class="badge">Actualizado</div></div></div><div class="wrap"><section class="block" id="resumen"><h2>Resumen Ejecutivo</h2><p class="desc">Ventas por año según ritmo ideal del plan (suma 1.675 und). Las demás gráficas usan datos reales y consolidados. Cada gráfica incluye su tabla de datos.</p><div class="grid"><div class="card"><h3>Ventas por año · VIS vs NO VIS (plan ideal)</h3><div class="cv"><canvas id="cVentas"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tVentas"></div></div><div class="card"><h3>Escrituras por año · VIS / NO VIS / Comercio</h3><div class="cv"><canvas id="cEscrituras"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tEscrituras"></div></div><div class="card"><h3>Entregas por año · VIS / NO VIS / Comercio</h3><div class="cv"><canvas id="cEntregas"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tEntregas"></div></div><div class="card"><h3>Participación en valor</h3><div class="cv"><canvas id="cParticipacion"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tParticipacion"></div></div><div class="card"><h3>Escrituras en dinero por año</h3><div class="cv"><canvas id="cEscDinero"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tEscDinero"></div></div><div class="card"><h3>Escrituras en dinero por mes</h3><div class="cv"><canvas id="cEscDineroMes"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tEscDineroMes"></div></div></div></section><section class="block" id="acc-cons"><h2>Ventas acumuladas — Consolidado</h2><p class="desc">Acumulado del grupo: Ritmo ideal, mínimo y ventas reales. Termina cuando el ritmo mínimo llega al 100%. La línea real va hasta el corte (<span class="cut-lbl">MAY-2026</span>).</p><div class="card tall"><h3>Grupo Accanto — Acumulado (Ideal / Mínimo / Real)</h3><div class="cv tallcv"><canvas id="cConsolidado"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tConsolidado"></div></div></section><section class="block" id="acc-proy"><h2>Ventas acumuladas — Por proyecto</h2><p class="desc">Cada proyecto empieza en su primer mes con actividad y termina cuando el ritmo mínimo llega al 100% de unidades; la real va hasta el corte.</p><div class="grid" id="acc-proy-grid"></div></section><section class="block" id="prom-cons"><h2>Promesas — Consolidado</h2><p class="desc">Unidades a firmar en promesa por mes (VIS / NO VIS / Comercio), solo meses con actividad.</p><div class="card tall"><h3>Meta Ideal vs Real · Promesas</h3><div class="cv tallcv"><canvas id="cPromIR"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tPromIR"></div></div><div class="card tall"><h3>Promesas mensuales · Consolidado</h3><div class="cv tallcv"><canvas id="cPromCons"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tPromCons"></div></div></section><section class="block" id="prom-proy"><h2>Promesas — Por proyecto</h2><p class="desc">Promesas mensuales por proyecto, separadas por tipología (ET1/ET2/CANJE) y Comercio.</p><h3 class="subhdr">Meta ideal vs Real · por proyecto</h3><div class="grid" id="prom-ir-grid"></div><h3 class="subhdr collapsible" onclick="toggleProy(this)" data-grid="prom-proy-grid"><span class="arw">▶</span> Ver detalle por proyecto</h3><div class="proywrap" id="prom-proy-grid-wrap" style="display:none"><div class="grid" id="prom-proy-grid"></div></div></section><section class="block" id="ventas-cons"><h2>Ventas mensuales — Consolidado</h2><p class="desc">Cumplimiento mensual: meta ideal vs venta real (barras agrupadas), desde el primer mes con ventas hasta el corte (<span class="cut-lbl">MAY-2026</span>). Abajo, el detalle por categoría.</p><div class="card tall"><h3>Cumplimiento mensual · Meta ideal vs Venta real</h3><div class="cv tallcv"><canvas id="cVentasCumpl"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tVentasCumpl"></div></div><div class="card tall"><h3>Ventas mensuales · VIS / NO VIS / Comercio</h3><div class="cv tallcv"><canvas id="cVentasMes"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tVentasMes"></div></div></section><section class="block" id="ventas-proy"><h2>Ventas mensuales — Por proyecto</h2><p class="desc">Unidades vendidas por mes y por proyecto, desde el primer mes con ventas hasta el corte.</p><h3 class="subhdr">Meta ideal vs Real · por proyecto</h3><div class="grid" id="ventas-ir-grid"></div><h3 class="subhdr collapsible" onclick="toggleProy(this)" data-grid="ventas-proy-grid"><span class="arw">▶</span> Ver detalle por proyecto</h3><div class="proywrap" id="ventas-proy-grid-wrap" style="display:none"><div class="grid" id="ventas-proy-grid"></div></div></section><section class="block" id="escr-cons"><h2>Escrituras mensuales — Consolidado</h2><p class="desc">Unidades escrituradas por mes (solo meses con actividad).</p><div class="card tall"><h3>Meta Ideal vs Real · Escrituras</h3><div class="cv tallcv"><canvas id="cEscrIR"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tEscrIR"></div></div><div class="card tall"><h3>Escrituras mensuales · Consolidado</h3><div class="cv tallcv"><canvas id="cEscrMes"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tEscrMes"></div></div></section><section class="block" id="escr-proy"><h2>Escrituras mensuales — Por proyecto</h2><p class="desc">Unidades escrituradas por mes y por proyecto.</p><h3 class="subhdr">Meta ideal vs Real · por proyecto</h3><div class="grid" id="escr-ir-grid"></div><h3 class="subhdr collapsible" onclick="toggleProy(this)" data-grid="escr-proy-grid"><span class="arw">▶</span> Ver detalle por proyecto</h3><div class="proywrap" id="escr-proy-grid-wrap" style="display:none"><div class="grid" id="escr-proy-grid"></div></div></section><section class="block" id="entr-cons"><h2>Entregas mensuales — Consolidado</h2><p class="desc">Unidades entregadas por mes (solo meses con actividad).</p><div class="card tall"><h3>Meta Ideal vs Real · Entregas</h3><div class="cv tallcv"><canvas id="cEntrIR"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tEntrIR"></div></div><div class="card tall"><h3>Entregas mensuales · Consolidado</h3><div class="cv tallcv"><canvas id="cEntrMes"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tEntrMes"></div></div></section><section class="block" id="entr-proy"><h2>Entregas mensuales — Por proyecto</h2><p class="desc">Unidades entregadas por mes y por proyecto.</p><h3 class="subhdr">Meta ideal vs Real · por proyecto</h3><div class="grid" id="entr-ir-grid"></div><h3 class="subhdr collapsible" onclick="toggleProy(this)" data-grid="entr-proy-grid"><span class="arw">▶</span> Ver detalle por proyecto</h3><div class="proywrap" id="entr-proy-grid-wrap" style="display:none"><div class="grid" id="entr-proy-grid"></div></div></section><div class="foot">Generado desde HITOS CONSOLIDADOS · Grupo Accanto · Corte <span class="cut-lbl">MAY-2026</span></div></div></div><script>
 // ====== Tablero de Control - Grupo Accanto ======
 let D=null, NM=0, CUT=0;
@@ -460,6 +477,9 @@ const builders={
 /* cargue autom\u00e1ticamente los datos en vivo al abrir.                     */
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7lk09QNjFWHRyzpo6-DUtIb-TGe2pkLYLLgtz8a-s-6uoqN18F-GC3tfhD6bqsoPyCQ/exec";
 
+/* Clave de acceso (la escribe el usuario en la pantalla de acceso; nunca se guarda en la pagina) */
+let APPS_SCRIPT_KEY = "";
+
 function setStatus(msg, kind){
   var t=document.getElementById('ds-status'), d=document.getElementById('ds-dot');
   if(t) t.textContent=msg;
@@ -617,18 +637,55 @@ async function cargarDesdeExcel(file){
 
 /* ---------- Modo B: Google Sheets en vivo (Apps Script) ---------- */
 async function cargarDesdeAppsScript(url){
-  if(!url){ setStatus('Pega la URL /exec del Apps Script y pulsa Conectar.','err'); return; }
+  if(!url){ setStatus('Pega la URL /exec del Apps Script y pulsa Conectar.','err'); return false; }
   setStatus('Conectando con Google Sheets\u2026','load');
   try{
-    const r=await fetch(url,{redirect:'follow'});
+    var full=url;
+    if(APPS_SCRIPT_KEY) full += (url.indexOf('?')<0?'?':'&')+'key='+encodeURIComponent(APPS_SCRIPT_KEY);
+    const r=await fetch(full,{redirect:'follow'});
     if(!r.ok) throw new Error('HTTP '+r.status);
     const j=await r.json();
     if(j.error) throw new Error(j.error);
     D=buildD(j.hitos, j.gac||[], j.cutMonth);
     renderAll();
     setStatus('Datos en vivo desde Google Sheets \u00b7 Corte '+D.cutMonth+' \u00b7 '+D.projects.length+' proyectos','ok');
+    return true;
   }catch(e){ console.error(e);
-    setStatus('No pude conectar ('+e.message+'). Revisa la URL /exec y que el despliegue sea p\u00fablico.','err'); }
+    setStatus('No pude conectar ('+e.message+'). Revisa la URL /exec y que el despliegue sea p\u00fablico.','err');
+    return false; }
+}
+
+/* ---------- Pantalla de acceso (clave) ---------- */
+function mostrarLogin(){
+  if(document.getElementById('login-overlay')) return;
+  var ov=document.createElement('div'); ov.id='login-overlay';
+  ov.innerHTML='<div class="lo-card">'
+    +'<h2>Tablero de Control</h2>'
+    +'<p>Grupo Accanto \u00b7 acceso restringido</p>'
+    +'<div class="lo-msg" id="lo-msg"></div>'
+    +'<input type="password" id="lo-pass" placeholder="Clave de acceso" autocomplete="current-password">'
+    +'<button id="lo-enter">Entrar</button>'
+    +'<div class="lo-alt">\u00bfSin conexi\u00f3n? <a id="lo-excel">Usar un archivo Excel</a></div>'
+    +'</div>';
+  document.body.appendChild(ov);
+  var pass=document.getElementById('lo-pass'), msg=document.getElementById('lo-msg');
+  async function entrar(){
+    var k=(pass.value||'').trim();
+    if(!k){ msg.textContent='Escribe la clave.'; return; }
+    msg.textContent=''; document.getElementById('lo-enter').disabled=true;
+    APPS_SCRIPT_KEY=k;
+    var ok=await cargarDesdeAppsScript(APPS_SCRIPT_URL);
+    document.getElementById('lo-enter').disabled=false;
+    if(ok){ ov.parentNode && ov.parentNode.removeChild(ov); }
+    else { APPS_SCRIPT_KEY=''; msg.textContent='Clave incorrecta o sin acceso.'; pass.value=''; pass.focus(); }
+  }
+  document.getElementById('lo-enter').addEventListener('click',entrar);
+  pass.addEventListener('keydown',function(e){ if(e.key==='Enter') entrar(); });
+  document.getElementById('lo-excel').addEventListener('click',function(){
+    ov.parentNode && ov.parentNode.removeChild(ov);
+    setStatus('Modo sin conexi\u00f3n \u2014 carga tu Excel con el bot\u00f3n.','idle');
+  });
+  setTimeout(function(){ pass.focus(); },50);
 }
 
 /* ---------- Cableado de la barra + autoarranque ---------- */
@@ -640,7 +697,7 @@ document.addEventListener('DOMContentLoaded',function(){
   if(APPS_SCRIPT_URL && ui) ui.value=APPS_SCRIPT_URL;
   if(cb) cb.addEventListener('click',function(){ cargarDesdeAppsScript(((ui&&ui.value)||'').trim()); });
   if(ui) ui.addEventListener('keydown',function(e){ if(e.key==='Enter') cargarDesdeAppsScript(ui.value.trim()); });
-  if(APPS_SCRIPT_URL) cargarDesdeAppsScript(APPS_SCRIPT_URL);
+  if(APPS_SCRIPT_URL) mostrarLogin();
   else setStatus('Sin datos \u2014 carga tu Excel (bot\u00f3n) o con\u00e9ctate a Google Sheets.','idle');
 });
 
