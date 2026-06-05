@@ -1,0 +1,647 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tablero de Control · Grupo Accanto</title><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><style>
+:root{--g1:#8BC34A;--g2:#4CAF50;--g3:#2E7D32;--g4:#1B5E20;--g5:#0E3E12;--ink:#1a1a1a;--muted:#6b7280;--bg:#f4f6f4;--card:#fff;--bd:#e3e8e3;--sidebar:#0E3E12;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.4}
+a{color:inherit;text-decoration:none}
+#sidebar{position:fixed;top:0;left:0;width:256px;height:100vh;background:var(--sidebar);color:#dfe9df;overflow-y:auto;transition:transform .25s ease;z-index:1200}
+#sidebar.collapsed{transform:translateX(-256px)}
+#sidebar .brand{display:flex;align-items:center;gap:10px;padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.12)}
+#sidebar .brand .ttl{font-weight:700;font-size:17px;color:#fff;letter-spacing:.5px}
+#sidebar nav{padding:8px 0}
+#sidebar nav .grp{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#7fae7f;padding:12px 18px 4px}
+#sidebar nav a{display:block;padding:9px 18px;font-size:13.5px;color:#cfe0cf;border-left:3px solid transparent;transition:.15s}
+#sidebar nav a:hover{background:rgba(255,255,255,.07);color:#fff;border-left-color:var(--g1)}
+#sidebar nav a.active{background:rgba(139,195,74,.18);color:#fff;border-left-color:var(--g1);font-weight:600}
+#main{margin-left:256px;transition:margin .25s ease}
+#main.full{margin-left:0}
+#togglebtn{position:fixed;top:14px;left:268px;z-index:1300;background:var(--g3);color:#fff;border:none;border-radius:8px;width:40px;height:40px;font-size:18px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.2);transition:left .25s}
+#togglebtn.full{left:14px}
+header.hd{background:linear-gradient(110deg,#0E3E12 0%,#1B5E20 45%,#2E7D32 100%);color:#fff;padding:26px 34px 22px 70px}
+header.hd .row1{display:flex;align-items:center;gap:18px}
+header.hd h1{font-size:26px;font-weight:700;letter-spacing:.3px}
+header.hd .sub{font-size:13px;color:#cfe6cf;margin-top:2px}
+header.hd .meta{display:flex;gap:30px;margin-top:16px;flex-wrap:wrap}
+header.hd .meta .m{font-size:12px;color:#bcd9bc}
+header.hd .meta .m b{display:block;font-size:14px;color:#fff;font-weight:600;margin-top:2px}
+#ctrl{position:sticky;top:0;z-index:1100;background:#fff;border-bottom:2px solid var(--g3);box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;flex-wrap:wrap}
+#ctrl .kpi{flex:1 1 0;min-width:120px;padding:10px 14px;border-right:1px solid var(--bd);text-align:center}
+#ctrl .kpi:last-child{border-right:none}
+#ctrl .kpi .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+#ctrl .kpi .val{font-size:16px;font-weight:700;color:var(--g4);margin-top:2px}
+#ctrl .kpi .val.sm{font-size:13px}
+#ctrl .kpi .badge{display:inline-block;background:var(--g2);color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;margin-top:3px}
+.wrap{padding:22px 26px;max-width:1680px;margin:0 auto}
+section.block{margin-bottom:34px;scroll-margin-top:150px}
+section.block h2{font-size:19px;color:var(--g4);border-left:5px solid var(--g2);padding-left:12px;margin-bottom:4px}
+section.block .desc{font-size:13px;color:var(--muted);margin:0 0 16px 17px}
+.subhdr{font-size:14px;color:#2E7D32;margin:18px 0 8px;font-weight:700;border-left:4px solid #8BC34A;padding-left:8px;}.subhdr.collapsible{cursor:pointer;user-select:none;display:flex;align-items:center;gap:8px;background:#f0f6f0;border-radius:6px;padding:9px 12px;transition:background .15s}.subhdr.collapsible:hover{background:#e3efe3}.subhdr.collapsible .arw{display:inline-block;transition:transform .2s;font-size:11px}.subhdr.collapsible.open .arw{transform:rotate(90deg)}.proywrap{margin-top:10px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));gap:18px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px 18px 12px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.card h3{font-size:14px;color:var(--g4);margin-bottom:10px;font-weight:600}
+.card .cv{position:relative;height:300px}
+.card .cv.tallcv,.card.tall .cv{height:360px}
+.tbtn{margin-top:10px;background:#eef4ee;border:1px solid var(--bd);color:var(--g4);font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;cursor:pointer}
+.tbtn:hover{background:var(--g2);color:#fff}
+.tbox{display:none;margin-top:10px;overflow-x:auto;max-height:260px;overflow-y:auto}
+table.dt{border-collapse:collapse;font-size:11px;white-space:nowrap;width:100%}
+table.dt th,table.dt td{border:1px solid var(--bd);padding:3px 7px;text-align:right}
+table.dt th:first-child,table.dt td:first-child{text-align:left;position:sticky;left:0;background:#f6f9f6;font-weight:600}
+table.dt thead th{background:var(--g4);color:#fff;position:sticky;top:0}
+.warn{background:#fff8e1;border:1px solid #f3d27a;color:#7a5a00;padding:8px 12px;border-radius:8px;font-size:12px}
+.foot{text-align:center;color:var(--muted);font-size:12px;padding:18px}
+@media(max-width:1100px){#sidebar{transform:translateX(-256px)}#sidebar.show{transform:translateX(0)}#main{margin-left:0}#togglebtn{left:14px}.grid{grid-template-columns:1fr}.card .cv{height:280px}}
+
+/* ===== Barra de fuente de datos (Excel / Google Sheets) ===== */
+#ds-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  background:linear-gradient(90deg,#0E3E12,#1B5E20);color:#eaf4ea;padding:12px 22px;
+  border-bottom:3px solid var(--g1);box-shadow:0 2px 10px rgba(0,0,0,.08)}
+#ds-bar .ds-left{display:flex;align-items:center;gap:10px;font-size:13px;min-width:240px}
+#ds-bar .ds-dot{width:11px;height:11px;border-radius:50%;background:#9e9e9e;flex:none;
+  box-shadow:0 0 0 3px rgba(255,255,255,.12)}
+#ds-bar .ds-dot.ok{background:var(--g1);box-shadow:0 0 0 3px rgba(139,195,74,.25)}
+#ds-bar .ds-dot.load{background:#E0A800;animation:dspulse 1s infinite}
+#ds-bar .ds-dot.err{background:#e53935}
+#ds-bar .ds-dot.idle{background:#cfe0cf}
+@keyframes dspulse{0%,100%{opacity:1}50%{opacity:.35}}
+#ds-bar .ds-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#ds-bar .ds-btn{display:inline-flex;align-items:center;gap:6px;cursor:pointer;border:none;
+  font:600 13px 'Segoe UI',Arial,sans-serif;border-radius:8px;padding:8px 14px;transition:.15s}
+#ds-bar .ds-file{background:var(--g2);color:#fff}
+#ds-bar .ds-file:hover{background:var(--g1);color:#0E3E12}
+#ds-bar .ds-connect{background:#fff;color:#1B5E20}
+#ds-bar .ds-connect:hover{background:#eaf4ea}
+#ds-bar .ds-url{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);
+  color:#fff;border-radius:8px;padding:8px 11px;font-size:12.5px;width:230px;outline:none}
+#ds-bar .ds-url::placeholder{color:#bcd3bc}
+#ds-bar .ds-url:focus{border-color:var(--g1);background:rgba(255,255,255,.15)}
+</style></head><body><aside id="sidebar"><div class="brand"><svg width="120" height="46" viewBox="0 0 300 112" xmlns="http://www.w3.org/2000/svg"><g transform="translate(6,4)"><polygon points="40,0 80,14 40,28 0,14" fill="#8BC34A" opacity="0.65"/><polygon points="40,14 80,28 40,42 0,28" fill="#7CB342" opacity="0.8"/><polygon points="40,28 80,42 40,56 0,42" fill="#4CAF50"/><polygon points="40,42 80,56 40,70 0,56" fill="#2E7D32"/><polygon points="40,56 80,70 40,84 0,70" fill="#1B5E20"/><polygon points="40,70 80,84 40,98 0,84" fill="#0E3E12"/></g><g transform="translate(110,30)" font-family="Segoe UI,Arial" font-weight="700"><rect x="0" y="0" width="46" height="46" fill="none" stroke="#fff" stroke-width="3"/><text x="23" y="35" font-size="38" fill="#fff" text-anchor="middle">g</text><text x="56" y="35" font-size="34" fill="#fff">accanto</text></g></svg><span class="ttl">Tablero de Control</span></div><nav><div class="grp">General</div><a href="#resumen" class="active">Resumen Ejecutivo</a><div class="grp">Ventas acumuladas</div><a href="#acc-cons">Consolidado</a><a href="#acc-proy">Por proyecto</a><div class="grp">Promesas</div><a href="#prom-cons">Consolidado</a><a href="#prom-proy">Por proyecto</a><div class="grp">Ventas mensuales</div><a href="#ventas-cons">Consolidado</a><a href="#ventas-proy">Por proyecto</a><div class="grp">Escrituras mensuales</div><a href="#escr-cons">Consolidado</a><a href="#escr-proy">Por proyecto</a><div class="grp">Entregas mensuales</div><a href="#entr-cons">Consolidado</a><a href="#entr-proy">Por proyecto</a></nav></aside><button id="togglebtn" title="Mostrar/ocultar menú">☰</button><div id="main"><header class="hd"><div class="row1"><div><svg width="150" height="56" viewBox="0 0 300 112" xmlns="http://www.w3.org/2000/svg"><g transform="translate(6,4)"><polygon points="40,0 80,14 40,28 0,14" fill="#8BC34A" opacity="0.65"/><polygon points="40,14 80,28 40,42 0,28" fill="#7CB342" opacity="0.8"/><polygon points="40,28 80,42 40,56 0,42" fill="#4CAF50"/><polygon points="40,42 80,56 40,70 0,56" fill="#2E7D32"/><polygon points="40,56 80,70 40,84 0,70" fill="#1B5E20"/><polygon points="40,70 80,84 40,98 0,84" fill="#0E3E12"/></g><g transform="translate(110,30)" font-family="Segoe UI,Arial" font-weight="700"><rect x="0" y="0" width="46" height="46" fill="none" stroke="#fff" stroke-width="3"/><text x="23" y="35" font-size="38" fill="#fff" text-anchor="middle">g</text><text x="56" y="35" font-size="34" fill="#fff">accanto</text></g></svg></div><div><h1>Tablero de Control</h1><div class="sub">Grupo Accanto · Seguimiento de proyectos</div></div></div><div class="meta"><div class="m">Fecha de corte<b class="cut-lbl">MAY-2026</b></div><div class="m">Fuente de datos<b>HITOS CONSOLIDADOS</b></div><div class="m">Proyectos<b id="k-proj">6 · VIS / NO VIS / Comercio</b></div></div></header><div id="ds-bar"><div class="ds-left"><span class="ds-dot" id="ds-dot"></span><span id="ds-status">Sin datos &mdash; carga tu Excel o conéctate a Google Sheets.</span></div><div class="ds-actions"><label class="ds-btn ds-file">📁 Cargar Excel<input type="file" id="ds-excel" accept=".xlsx,.xlsm" hidden></label><input type="text" id="ds-url" class="ds-url" placeholder="URL Apps Script (/exec)…"><button class="ds-btn ds-connect" id="ds-connect">Conectar Sheets</button></div></div><div id="ctrl"><div class="kpi"><div class="lbl">Fecha corte</div><div class="val" id="k-cut">—</div></div><div class="kpi"><div class="lbl">Und. VIS</div><div class="val" id="k-visU">—</div></div><div class="kpi"><div class="lbl">Und. NO VIS</div><div class="val" id="k-novisU">—</div></div><div class="kpi"><div class="lbl">Und. Comercio</div><div class="val" id="k-comU">—</div></div><div class="kpi"><div class="lbl">Total unidades</div><div class="val" id="k-escr">—</div></div><div class="kpi"><div class="lbl">Valor VIS</div><div class="val sm" id="k-visV">—</div></div><div class="kpi"><div class="lbl">Valor NO VIS</div><div class="val sm" id="k-novisV">—</div></div><div class="kpi"><div class="lbl">Valor Comercio</div><div class="val sm" id="k-comV">—</div></div><div class="kpi"><div class="lbl">Valor total</div><div class="val sm" id="k-val">—</div></div><div class="kpi"><div class="lbl">Estado</div><div class="badge">Actualizado</div></div></div><div class="wrap"><section class="block" id="resumen"><h2>Resumen Ejecutivo</h2><p class="desc">Ventas por año según ritmo ideal del plan (suma 1.675 und). Las demás gráficas usan datos reales y consolidados. Cada gráfica incluye su tabla de datos.</p><div class="grid"><div class="card"><h3>Ventas por año · VIS vs NO VIS (plan ideal)</h3><div class="cv"><canvas id="cVentas"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tVentas"></div></div><div class="card"><h3>Escrituras por año · VIS / NO VIS / Comercio</h3><div class="cv"><canvas id="cEscrituras"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tEscrituras"></div></div><div class="card"><h3>Entregas por año · VIS / NO VIS / Comercio</h3><div class="cv"><canvas id="cEntregas"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tEntregas"></div></div><div class="card"><h3>Participación en valor</h3><div class="cv"><canvas id="cParticipacion"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tParticipacion"></div></div><div class="card"><h3>Escrituras en dinero por año</h3><div class="cv"><canvas id="cEscDinero"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tEscDinero"></div></div><div class="card"><h3>Escrituras en dinero por mes</h3><div class="cv"><canvas id="cEscDineroMes"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tEscDineroMes"></div></div></div></section><section class="block" id="acc-cons"><h2>Ventas acumuladas — Consolidado</h2><p class="desc">Acumulado del grupo: Ritmo ideal, mínimo y ventas reales. Termina cuando el ritmo mínimo llega al 100%. La línea real va hasta el corte (<span class="cut-lbl">MAY-2026</span>).</p><div class="card tall"><h3>Grupo Accanto — Acumulado (Ideal / Mínimo / Real)</h3><div class="cv tallcv"><canvas id="cConsolidado"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tConsolidado"></div></div></section><section class="block" id="acc-proy"><h2>Ventas acumuladas — Por proyecto</h2><p class="desc">Cada proyecto empieza en su primer mes con actividad y termina cuando el ritmo mínimo llega al 100% de unidades; la real va hasta el corte.</p><div class="grid" id="acc-proy-grid"></div></section><section class="block" id="prom-cons"><h2>Promesas — Consolidado</h2><p class="desc">Unidades a firmar en promesa por mes (VIS / NO VIS / Comercio), solo meses con actividad.</p><div class="card tall"><h3>Meta Ideal vs Real · Promesas</h3><div class="cv tallcv"><canvas id="cPromIR"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tPromIR"></div></div><div class="card tall"><h3>Promesas mensuales · Consolidado</h3><div class="cv tallcv"><canvas id="cPromCons"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tPromCons"></div></div></section><section class="block" id="prom-proy"><h2>Promesas — Por proyecto</h2><p class="desc">Promesas mensuales por proyecto, separadas por tipología (ET1/ET2/CANJE) y Comercio.</p><h3 class="subhdr">Meta ideal vs Real · por proyecto</h3><div class="grid" id="prom-ir-grid"></div><h3 class="subhdr collapsible" onclick="toggleProy(this)" data-grid="prom-proy-grid"><span class="arw">▶</span> Ver detalle por proyecto</h3><div class="proywrap" id="prom-proy-grid-wrap" style="display:none"><div class="grid" id="prom-proy-grid"></div></div></section><section class="block" id="ventas-cons"><h2>Ventas mensuales — Consolidado</h2><p class="desc">Cumplimiento mensual: meta ideal vs venta real (barras agrupadas), desde el primer mes con ventas hasta el corte (<span class="cut-lbl">MAY-2026</span>). Abajo, el detalle por categoría.</p><div class="card tall"><h3>Cumplimiento mensual · Meta ideal vs Venta real</h3><div class="cv tallcv"><canvas id="cVentasCumpl"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tVentasCumpl"></div></div><div class="card tall"><h3>Ventas mensuales · VIS / NO VIS / Comercio</h3><div class="cv tallcv"><canvas id="cVentasMes"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tVentasMes"></div></div></section><section class="block" id="ventas-proy"><h2>Ventas mensuales — Por proyecto</h2><p class="desc">Unidades vendidas por mes y por proyecto, desde el primer mes con ventas hasta el corte.</p><h3 class="subhdr">Meta ideal vs Real · por proyecto</h3><div class="grid" id="ventas-ir-grid"></div><h3 class="subhdr collapsible" onclick="toggleProy(this)" data-grid="ventas-proy-grid"><span class="arw">▶</span> Ver detalle por proyecto</h3><div class="proywrap" id="ventas-proy-grid-wrap" style="display:none"><div class="grid" id="ventas-proy-grid"></div></div></section><section class="block" id="escr-cons"><h2>Escrituras mensuales — Consolidado</h2><p class="desc">Unidades escrituradas por mes (solo meses con actividad).</p><div class="card tall"><h3>Meta Ideal vs Real · Escrituras</h3><div class="cv tallcv"><canvas id="cEscrIR"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tEscrIR"></div></div><div class="card tall"><h3>Escrituras mensuales · Consolidado</h3><div class="cv tallcv"><canvas id="cEscrMes"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tEscrMes"></div></div></section><section class="block" id="escr-proy"><h2>Escrituras mensuales — Por proyecto</h2><p class="desc">Unidades escrituradas por mes y por proyecto.</p><h3 class="subhdr">Meta ideal vs Real · por proyecto</h3><div class="grid" id="escr-ir-grid"></div><h3 class="subhdr collapsible" onclick="toggleProy(this)" data-grid="escr-proy-grid"><span class="arw">▶</span> Ver detalle por proyecto</h3><div class="proywrap" id="escr-proy-grid-wrap" style="display:none"><div class="grid" id="escr-proy-grid"></div></div></section><section class="block" id="entr-cons"><h2>Entregas mensuales — Consolidado</h2><p class="desc">Unidades entregadas por mes (solo meses con actividad).</p><div class="card tall"><h3>Meta Ideal vs Real · Entregas</h3><div class="cv tallcv"><canvas id="cEntrIR"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tEntrIR"></div></div><div class="card tall"><h3>Entregas mensuales · Consolidado</h3><div class="cv tallcv"><canvas id="cEntrMes"></canvas></div><button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="tEntrMes"></div></div></section><section class="block" id="entr-proy"><h2>Entregas mensuales — Por proyecto</h2><p class="desc">Unidades entregadas por mes y por proyecto.</p><h3 class="subhdr">Meta ideal vs Real · por proyecto</h3><div class="grid" id="entr-ir-grid"></div><h3 class="subhdr collapsible" onclick="toggleProy(this)" data-grid="entr-proy-grid"><span class="arw">▶</span> Ver detalle por proyecto</h3><div class="proywrap" id="entr-proy-grid-wrap" style="display:none"><div class="grid" id="entr-proy-grid"></div></div></section><div class="foot">Generado desde HITOS CONSOLIDADOS · Grupo Accanto · Corte <span class="cut-lbl">MAY-2026</span></div></div></div><script>
+// ====== Tablero de Control - Grupo Accanto ======
+let D=null, NM=0, CUT=0;
+const C = {VIS:'#2E7D32','NO VIS':'#8BC34A',Comercio:'#1B5E20',ideal:'#9e9e9e',min:'#E0A800',real:'#2E7D32',mi:'#2E7D32',rl:'#E0A800'};
+const PC = ['#1B5E20','#2E7D32','#4CAF50','#8BC34A','#558B2F','#33691E'];
+const nf = new Intl.NumberFormat('es-CO');
+// --- formato unidades / pesos (datos en miles COP) ---
+function fU(n){return n==null?'-':nf.format(Math.round(n));}
+function fCOP(miles){return miles==null?'-':'$'+nf.format(Math.round(miles*1000));}
+function fMM(miles){return '$'+nf.format(Math.round(miles/1000))+'M';}
+function pct(p,t){return t?(100*p/t).toFixed(1)+'%':'0%';}
+function yr(l){return (l||'').split('-')[1];}
+// --- corte: último índice con actividad real ---
+function lastActive(a){let l=-1;for(let i=0;i<NM;i++)if(a&&a[i]!=null&&a[i]!==0)l=i;return l;}
+// índices de meses con actividad (para no graficar vacíos)
+function activeIdx(){const ss=[].slice.call(arguments);const k=[];for(let i=0;i<NM;i++){let any=false;for(const s of ss)if(s&&s[i]!=null&&s[i]!==0){any=true;break;}if(any)k.push(i);}return k;}
+function pick(a,k){return k.map(i=>a&&a[i]!=null?a[i]:null);}
+// primer índice con actividad (recorta ceros iniciales). series: arrays a evaluar
+function firstActive(){const ss=[].slice.call(arguments);for(let i=0;i<NM;i++){for(const s of ss)if(s&&s[i]!=null&&s[i]!==0)return i;}return 0;}
+// ritmo ideal mensual = diferencias del acumulado ideal (meta del mes)
+function monthlyFromAcc(acc){const r=new Array(NM).fill(0);let prev=0;for(let i=0;i<NM;i++){const v=(acc&&acc[i]!=null)?acc[i]:prev;r[i]=Math.max(0,v-prev);prev=v;}return r;}
+// meses donde el acumulado ideal llega al máximo (proyecto termina ventas) + buffer
+function idealEnd(ideal){let mx=-1e9;for(const x of ideal)if(x!=null&&x>mx)mx=x;let pl=-1;for(let i=0;i<NM;i++)if(ideal[i]!=null&&ideal[i]>=mx){pl=i;break;}return Math.min(NM-1,(pl>=0?pl:NM-1)+2);}
+const charts=[];
+function mk(id,cfg){const el=document.getElementById(id);if(!el)return null;try{const c=new Chart(el,cfg);charts.push(c);return c;}catch(e){if(window.console)console.error('Chart '+id+': '+e);return null;}}
+function opts(extra){return Object.assign({responsive:true,maintainAspectRatio:false,animation:false,devicePixelRatio:1.5,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{font:{size:11},usePointStyle:true}},datalabels:{display:false}}},extra||{});}
+// === TABLA DESPLEGABLE bajo cada gráfica ===
+// labels: array de meses/años ; series: [{name, data:[...]}] ; fmt: 'u'|'cop'
+// Guarda los datos de la tabla; se renderiza solo al pulsar "Ver datos" (lazy)
+const _tableData={};
+function dataTable(containerId, labels, series, fmt){ _tableData[containerId]={labels,series,fmt}; }
+function renderTable(containerId){
+  const wrap=document.getElementById(containerId); const d=_tableData[containerId]; if(!wrap||!d||wrap.dataset.built)return;
+  const fmtFn=d.fmt==='cop'?fCOP:fU;
+  let h='<table class="dt"><thead><tr><th>Serie</th>';
+  for(const l of d.labels) h+='<th>'+l+'</th>';
+  h+='<th>Total</th></tr></thead><tbody>';
+  for(const s of d.series){ let tot=0; h+='<tr><td>'+s.name+'</td>'; for(const x of s.data){const v=(x==null?0:x);tot+=v;h+='<td>'+(x==null?'-':fmtFn(x))+'</td>';} h+='<td><b>'+fmtFn(tot)+'</b></td></tr>'; }
+  h+='</tbody></table>'; wrap.innerHTML=h; wrap.dataset.built='1';
+}
+function toggleTable(btn){
+  const box=btn.nextElementSibling; const open=box.style.display==='block';
+  if(!open) renderTable(box.id);     // construir al abrir por primera vez
+  box.style.display=open?'none':'block';
+  btn.textContent=open?'Ver datos':'Ocultar datos';
+}
+// ===== KPIs =====
+function buildKPIs(){
+  const k=D.kpis;
+  document.getElementById('k-cut').textContent=D.cutMonth;
+  document.getElementById('k-visU').textContent=fU(k.visU);
+  document.getElementById('k-novisU').textContent=fU(k.novisU);
+  document.getElementById('k-comU').textContent=fU(k.comU);
+  document.getElementById('k-escr').textContent=fU(k.visU+k.novisU+k.comU);
+  document.getElementById('k-val').textContent=fCOP(k.visV+k.novisV+k.comV);
+  document.getElementById('k-visV').textContent=fCOP(k.visV);
+  document.getElementById('k-novisV').textContent=fCOP(k.novisV);
+  document.getElementById('k-comV').textContent=fCOP(k.comV);
+  var pe=document.getElementById('k-proj');
+  if(pe){
+    var cls=[]; D.projects.forEach(function(p){ if(cls.indexOf(p.cls)<0) cls.push(p.cls); });
+    var hasCom=D.projects.some(function(p){ return (p.comercioMiles>0)||(p.unidCom>0)||(p.ventasByClass&&p.ventasByClass.Comercio&&p.ventasByClass.Comercio.some(function(v){return v>0;})); });
+    if(hasCom) cls.push('Comercio');
+    pe.textContent=D.projects.length+' · '+cls.join(' / ');
+  }
+  var ce=document.querySelectorAll('.cut-lbl'); for(var i=0;i<ce.length;i++) ce[i].textContent=D.cutMonth;
+}
+// ===== Resumen ejecutivo: por año (excluye años en cero) =====
+function byYear(obj){
+  const ys={};
+  for(let i=0;i<NM;i++){const y=yr(D.months[i]);ys[y]=ys[y]||{VIS:0,'NO VIS':0,Comercio:0};for(const c in obj)ys[y][c]+=(obj[c][i]||0);}
+  const keys=Object.keys(ys).sort().filter(y=>ys[y].VIS+ys[y]['NO VIS']+ys[y].Comercio>0);
+  return {years:keys,data:keys.map(y=>ys[y])};
+}
+// ===== Ventas por año según RITMO IDEAL (plan comercial) — suma total = unidades del plan =====
+function ventasPlanPorAnio(canvasId,tableId){
+  // Para cada proyecto: ideal mensual (diferencias del acumulado ideal) clasificado por la clase del proyecto.
+  const ys={};
+  for(const p of D.projects){
+    const im=monthlyFromAcc(p.accIdeal);
+    for(let i=0;i<NM;i++){ if(!im[i])continue; const y=yr(D.months[i]); ys[y]=ys[y]||{VIS:0,'NO VIS':0}; ys[y][p.cls]+=im[i]; }
+  }
+  const keys=Object.keys(ys).sort().filter(y=>ys[y].VIS+ys[y]['NO VIS']>0);
+  const data=keys.map(y=>ys[y]);
+  const ds=[{label:'VIS',backgroundColor:C.VIS,data:data.map(d=>Math.round(d.VIS))},{label:'NO VIS',backgroundColor:C['NO VIS'],data:data.map(d=>Math.round(d['NO VIS']))}];
+  mk(canvasId,{type:'bar',data:{labels:keys,datasets:ds},options:opts({scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:fU}}},plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+fU(c.parsed.y)+' und (plan ideal)'}},datalabels:{display:c=>c.dataset.data[c.dataIndex]>0,color:'#fff',font:{size:10,weight:'bold'},formatter:fU}}})});
+  dataTable(tableId,keys,ds.map(d=>({name:d.label,data:d.data})),'u');
+}
+function execYear(canvasId,tableId,obj,withCom){
+  const {years,data}=byYear(obj);
+  const ds=[{label:'VIS',backgroundColor:C.VIS,data:data.map(d=>d.VIS)},{label:'NO VIS',backgroundColor:C['NO VIS'],data:data.map(d=>d['NO VIS'])}];
+  if(withCom)ds.push({label:'Comercio',backgroundColor:C.Comercio,data:data.map(d=>d.Comercio)});
+  mk(canvasId,{type:'bar',data:{labels:years,datasets:ds},options:opts({scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:fU}}},plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+fU(c.parsed.y)+' und'}},datalabels:{display:c=>c.dataset.data[c.dataIndex]>0,color:'#fff',font:{size:10,weight:'bold'},formatter:fU}}})});
+  dataTable(tableId,years,ds.map(d=>({name:d.label,data:d.data})),'u');
+}
+// ===== Ventas mensuales: Real vs Ideal (cumplimiento) — barras Real + línea meta Ideal =====
+function ventasCumplimiento(canvasId,tableId){
+  const real={VIS:D.agg.ventasMonthly.VIS,'NO VIS':D.agg.ventasMonthly['NO VIS'],Comercio:D.agg.ventasMonthly.Comercio};
+  const realTot=[];for(let i=0;i<NM;i++)realTot.push((real.VIS[i]||0)+(real['NO VIS'][i]||0)+(real.Comercio[i]||0));
+  const idealMonthly=monthlyFromAcc(D.consAcc.ideal);   // meta mensual = diferencias del acumulado ideal
+  // recorte: desde primer mes con venta real, hasta el corte
+  let lo=firstActive(realTot);let hi=CUT;
+  const k=[];for(let i=lo;i<=hi;i++)k.push(i);
+  const labels=k.map(i=>D.months[i]);
+  const rData=k.map(i=>realTot[i]), iData=k.map(i=>idealMonthly[i]);
+  const many=labels.length>14;
+  mk(canvasId,{type:'bar',data:{labels,datasets:[
+    {label:'Meta ideal',backgroundColor:C.mi,data:iData,order:1},
+    {label:'Venta real',backgroundColor:C.rl,data:rData,order:1}
+  ]},options:opts({scales:{y:{ticks:{callback:fU}},x:{ticks:{maxRotation:90,minRotation:60,font:{size:9},autoSkip:true,maxTicksLimit:24}}},plugins:{tooltip:{callbacks:{title:it=>labels[it[0].dataIndex],label:c=>c.dataset.label+': '+fU(c.parsed.y)+' und'+(c.dataset.label.indexOf('real')>=0&&iData[c.dataIndex]>0?' ('+Math.round(100*c.parsed.y/iData[c.dataIndex])+'% de meta)':'')}},datalabels:{display:c=>{const v=c.dataset.data[c.dataIndex];return typeof v==='number'&&v>0;},anchor:'end',align:'end',color:'#333',font:{size:many?7:9,weight:'bold'},formatter:(v)=>(typeof v==='number'&&v>0)?fU(v):''}}})});
+  dataTable(tableId,labels,[{name:'Meta ideal',data:iData},{name:'Venta real',data:rData}],'u');
+}
+// ===== Participación valor =====
+function participacion(){
+  const k=D.kpis;
+  mk('cParticipacion',{type:'doughnut',data:{labels:['VIS','NO VIS','Comercio'],datasets:[{data:[k.visV,k.novisV,k.comV],backgroundColor:[C.VIS,C['NO VIS'],C.Comercio],borderWidth:2,borderColor:'#fff'}]},options:opts({cutout:'58%',plugins:{legend:{position:'right'},tooltip:{callbacks:{label:c=>{const t=c.dataset.data.reduce((a,b)=>a+b,0);return c.label+': '+fCOP(c.parsed)+' ('+pct(c.parsed,t)+')';}}},datalabels:{color:'#fff',font:{size:11,weight:'bold'},formatter:(val,c)=>{const t=c.dataset.data.reduce((a,b)=>a+b,0);return pct(val,t);}}}})});
+  dataTable('tParticipacion',['VIS','NO VIS','Comercio'],[{name:'Valor (COP)',data:[k.visV,k.novisV,k.comV]}],'cop');
+}
+// ===== Escrituras en dinero por año =====
+function escrDinero(){
+  const ys={};
+  function add(y,b,val){ys[y]=ys[y]||{VIS:0,'NO VIS':0,Comercio:0};ys[y][b]+=val;}
+  for(const p of D.projects){
+    let mV=null,mC=null;
+    for(const kk in p.milestones){if(kk.indexOf('CTO + Decenal')>=0){if(kk.indexOf('COMERCIO')===0)mC=p.milestones[kk];else if(!mV)mV=p.milestones[kk];}}
+    if(!mV)for(const kk in p.milestones){if(kk.indexOf('CTO + Decenal')>=0){mV=p.milestones[kk];break;}}
+    if(!mC)mC=mV;
+    if(mV&&p.viviendaMiles)add(yr(mV),p.cls,p.viviendaMiles);
+    if(mC&&p.comercioMiles)add(yr(mC),'Comercio',p.comercioMiles);
+  }
+  const keys=Object.keys(ys).sort().filter(y=>ys[y].VIS+ys[y]['NO VIS']+ys[y].Comercio>0);
+  const data=keys.map(y=>ys[y]);
+  const ds=[{label:'VIS',backgroundColor:C.VIS,data:data.map(d=>d.VIS)},{label:'NO VIS',backgroundColor:C['NO VIS'],data:data.map(d=>d['NO VIS'])},{label:'Comercio',backgroundColor:C.Comercio,data:data.map(d=>d.Comercio)}];
+  mk('cEscDinero',{type:'bar',data:{labels:keys,datasets:ds},options:opts({scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:fMM}}},plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+fCOP(c.parsed.y)}},datalabels:{display:false}}})});
+  dataTable('tEscDinero',keys,ds.map(d=>({name:d.label,data:d.data})),'cop');
+}
+// ===== Escrituras en dinero por MES (VIS/NO VIS/Comercio) =====
+// Distribuye el valor de cada proyecto en sus meses de escritura, proporcional a las unidades escrituradas.
+function escrDineroMensual(canvasId,tableId){
+  const out={VIS:new Array(NM).fill(0),'NO VIS':new Array(NM).fill(0),Comercio:new Array(NM).fill(0)};
+  for(const p of D.projects){
+    const eb=p.escrByClass||{}; 
+    // vivienda: precio prom = viviendaMiles / unidViv ; comercio: comercioMiles / unidCom
+    const pVivienda = p.unidViv? p.viviendaMiles/p.unidViv : 0;
+    const pComercio = p.unidCom? p.comercioMiles/p.unidCom : 0;
+    const claseViv = p.cls; // VIS o NO VIS
+    for(let i=0;i<NM;i++){
+      const uViv=(eb[claseViv]?eb[claseViv][i]:0)||0;          // unid escrituradas vivienda ese mes
+      const uCom=(eb.Comercio?eb.Comercio[i]:0)||0;             // unid escrituradas comercio ese mes
+      if(uViv) out[claseViv][i]+= uViv*pVivienda;
+      if(uCom) out.Comercio[i]+= uCom*pComercio;
+    }
+  }
+  // meses con actividad
+  const act=activeIdx(out.VIS,out['NO VIS'],out.Comercio); if(!act.length){return;}
+  const lo=act[0],hi=act[act.length-1];const k=[];for(let i=lo;i<=hi;i++)k.push(i);
+  const labels=k.map(i=>D.months[i]);
+  const ds=[{label:'VIS',backgroundColor:C.VIS,data:k.map(i=>out.VIS[i])},{label:'NO VIS',backgroundColor:C['NO VIS'],data:k.map(i=>out['NO VIS'][i])},{label:'Comercio',backgroundColor:C.Comercio,data:k.map(i=>out.Comercio[i])}];
+  mk(canvasId,{type:'bar',data:{labels,datasets:ds},options:opts({scales:{x:{stacked:true,ticks:{maxRotation:90,minRotation:60,font:{size:9},autoSkip:true,maxTicksLimit:24}},y:{stacked:true,ticks:{callback:fMM}}},plugins:{tooltip:{callbacks:{title:it=>labels[it[0].dataIndex],label:c=>c.dataset.label+': '+fCOP(c.parsed.y)}},datalabels:{display:false}}})});
+  dataTable(tableId,labels,ds.map(d=>({name:d.label,data:d.data})),'cop');
+}
+// ===== Acumuladas: consolidado (ideal/min/real) — recorta ceros iniciales =====
+function accChart(canvasId,tableId,ideal,min,real,labelReal){
+  const start=firstActive(ideal,min,real);   // primer mes con actividad (sin ceros iniciales)
+  // fin = primer mes donde el ritmo MÍNIMO alcanza el 100% (su máximo); sin meseta posterior
+  function reach100(a){let mx=-1e9;for(const x of a)if(x!=null&&x>mx)mx=x;for(let i=0;i<NM;i++)if(a[i]!=null&&a[i]>=mx)return i;return NM-1;}
+  let endIx=reach100(min);                      // la gráfica llega hasta que el ritmo MÍNIMO alcanza el 100%
+  const idealEndIx=reach100(ideal);             // mes en que la META IDEAL llega al 100% (su línea termina ahí, sin meseta)
+  const labels=D.months.slice(start,endIx+1);
+  const realCut=real.slice(start,endIx+1).map((x,i)=>(start+i)<=CUT?x:null);  // real solo hasta corte
+  const idealCut=ideal.slice(start,endIx+1).map((x,i)=>(start+i)<=idealEndIx?x:null); // ideal sin meseta tras su 100%
+  const ds=[
+    {label:'Ritmo ideal',borderColor:C.ideal,borderDash:[6,4],data:idealCut,pointRadius:0,tension:.2,borderWidth:2,spanGaps:false},
+    {label:'Ritmo mínimo',borderColor:C.min,borderDash:[3,3],data:min.slice(start,endIx+1),pointRadius:0,tension:.2,borderWidth:2},
+    {label:labelReal||'Ventas reales',borderColor:C.real,backgroundColor:'rgba(46,125,50,.08)',data:realCut,fill:true,pointRadius:0,tension:.2,borderWidth:3}
+  ];
+  mk(canvasId,{type:'line',data:{labels,datasets:ds},options:opts({layout:{padding:{right:12}},scales:{x:{ticks:{maxRotation:90,minRotation:60,font:{size:8},autoSkip:true,maxTicksLimit:Math.min(labels.length,28)}},y:{ticks:{callback:fU}}},plugins:{tooltip:{callbacks:{title:it=>labels[it[0].dataIndex],label:c=>c.dataset.label+': '+(c.parsed.y==null?'-':fU(c.parsed.y))+' und'}},datalabels:{display:false}}})});
+  dataTable(tableId,labels,ds.map(d=>({name:d.label,data:d.data})),'u');
+}
+// ===== Mensual apilado VIS/NO VIS/Comercio — barras con etiquetas, recorta ceros iniciales =====
+// capCut=true: no graficar meses posteriores al mes de corte (para VENTAS reales)
+function monthly(canvasId,tableId,obj,unitLabel,capCut){
+  if(!obj){return false;}
+  const act=activeIdx(obj.VIS,obj['NO VIS'],obj.Comercio);
+  if(!act.length){return false;}
+  let lo=act[0], hi=act[act.length-1];
+  if(capCut) hi=Math.min(hi,CUT);              // ventas reales solo hasta el mes de corte
+  if(hi<lo) return false;
+  const k=[];for(let i=lo;i<=hi;i++)k.push(i); // rango continuo desde primer mes con actividad
+  const labels=k.map(i=>D.months[i]);
+  const ds=[{label:'VIS',backgroundColor:C.VIS,data:pick(obj.VIS,k)},{label:'NO VIS',backgroundColor:C['NO VIS'],data:pick(obj['NO VIS'],k)},{label:'Comercio',backgroundColor:C.Comercio,data:pick(obj.Comercio,k)}];
+  const many=labels.length>14;
+  mk(canvasId,{type:'bar',data:{labels,datasets:ds},options:opts({scales:{x:{stacked:true,ticks:{maxRotation:90,minRotation:60,font:{size:9},autoSkip:true,maxTicksLimit:24}},y:{stacked:true,ticks:{callback:fU}}},plugins:{tooltip:{callbacks:{title:it=>labels[it[0].dataIndex],label:c=>c.dataset.label+': '+fU(c.parsed.y)+' '+(unitLabel||'und')}},datalabels:{display:c=>{const v=c.dataset.data[c.dataIndex];return typeof v==='number'&&v>0;},color:'#fff',font:{size:many?8:10,weight:'bold'},formatter:(v)=>(typeof v==='number'&&v>0)?fU(v):''}}})});
+  dataTable(tableId,labels,ds.map(d=>({name:d.label,data:d.data})),'u');
+  return true;
+}
+// Cola de render escalonado: ejecuta tareas pesadas una por frame (no congela el hilo)
+function rafQueue(tasks){let i=0;function run(){if(i>=tasks.length)return;try{tasks[i]();}catch(e){if(window.console)console.error(e);}i++;(window.requestAnimationFrame||setTimeout)(run);}run();}
+// ===== Crea una tarjeta con canvas + botón + tabla, la inserta en grid =====
+function makeCard(grid,title,cid,tid,tall){
+  const c=document.createElement('div');c.className='card'+(tall?' tall':'');
+  c.innerHTML='<h3>'+title+'</h3><div class="cv'+(tall?' tallcv':'')+'"><canvas id="'+cid+'"></canvas></div>'
+    +'<button class="tbtn" onclick="toggleTable(this)">Ver datos</button><div class="tbox" id="'+tid+'"></div>';
+  grid.appendChild(c);
+}
+
+// ===== Acumuladas por proyecto =====
+function accPorProyecto(){
+  const g=document.getElementById('acc-proy-grid');const tasks=[];
+  D.projects.forEach((p,i)=>{ makeCard(g,p.name+' ('+p.cls+')','accp'+i,'taccp'+i,false);
+    tasks.push(()=>accChart('accp'+i,'taccp'+i,p.accIdeal||[],p.accMin||[],p.accReal||[])); });
+  rafQueue(tasks);
+}
+// ===== Promesas por proyecto (apilado por tipología) =====
+function promPorProyecto(){
+  const g=document.getElementById('prom-proy-grid');const tasks=[];let any=false;
+  D.projects.forEach((p,i)=>{
+    const secs=Object.keys(p.promesasBySec||{});if(!secs.length)return;
+    const k=activeIdx.apply(null,secs.map(s=>p.promesasBySec[s]));if(!k.length)return;any=true;
+    makeCard(g,p.name+' — Promesas ('+p.cls+')','promp'+i,'tpromp'+i,false);
+    tasks.push(()=>{const labels=k.map(j=>D.months[j]);
+      const ds=secs.map((s,si)=>{const isC=s==='COMERCIO';return {label:isC?'Comercio':s,data:pick(p.promesasBySec[s],k),backgroundColor:isC?C.Comercio:(p.cls==='VIS'?C.VIS:C['NO VIS']),borderColor:isC?C.Comercio:PC[(i+si)%PC.length],borderRadius:4,maxBarThickness:26};});
+      mk('promp'+i,{type:'bar',data:{labels,datasets:ds},options:opts({scales:{x:{stacked:true,ticks:{maxRotation:90,minRotation:60,font:{size:9},autoSkip:true,maxTicksLimit:18}},y:{stacked:true,ticks:{callback:fU}}},plugins:{tooltip:{callbacks:{title:it=>labels[it[0].dataIndex],label:c=>c.dataset.label+': '+fU(c.parsed.y)+' und'}},datalabels:{display:c=>{const v=c.dataset.data[c.dataIndex];return typeof v==='number'&&v>0;},anchor:'end',align:'end',color:'#333',font:{size:9,weight:'bold'},formatter:(v)=>(typeof v==='number'&&v>0)?fU(v):''}}})});
+      dataTable('tpromp'+i,labels,ds.map(d=>({name:d.label,data:d.data})),'u');});
+  });
+  if(!any)g.innerHTML='<div class="warn">No hay datos de promesas con actividad.</div>'; else rafQueue(tasks);
+}
+// ===== Mensual por proyecto (genérico) =====
+function monthlyPorProyecto(gridId,prefix,key,unitLabel,capCut){
+  const g=document.getElementById(gridId);const tasks=[];let any=false;
+  D.projects.forEach((p,i)=>{
+    const obj=p[key];if(!obj)return;
+    const act=activeIdx(obj.VIS,obj['NO VIS'],obj.Comercio);if(!act.length)return;
+    if(capCut&&act[0]>CUT)return;any=true;
+    makeCard(g,p.name+' ('+p.cls+')',prefix+i,'t'+prefix+i,false);
+    tasks.push(()=>monthly(prefix+i,'t'+prefix+i,obj,unitLabel,capCut));
+  });
+  if(!any&&g)g.innerHTML='<div class="warn">Sin meses con actividad.</div>'; else rafQueue(tasks);
+}
+// ===== Menú lateral / toggle =====
+function initNav(){
+  const sb=document.getElementById('sidebar'),mn=document.getElementById('main'),tb=document.getElementById('togglebtn');
+  tb.addEventListener('click',()=>{if(window.innerWidth<=1100){sb.classList.toggle('show');}else{sb.classList.toggle('collapsed');mn.classList.toggle('full');tb.classList.toggle('full');}});
+  const links=[].slice.call(document.querySelectorAll('#sidebar nav a'));
+  links.forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=1100)sb.classList.remove('show');}));
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  window.addEventListener('scroll',()=>{let cur=secs[0];for(const s of secs)if(s.getBoundingClientRect().top<130)cur=s;links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur.id));},{passive:true});
+}
+
+
+// === Desplegable detalle por proyecto (lazy render + resize) ===
+const _proyBuilt={};
+const _proyRender={
+  'ventas-proy-grid':()=>monthlyPorProyecto('ventas-proy-grid','vm','ventasByClass','und',true),
+  'prom-proy-grid':()=>promPorProyecto(),
+  'escr-proy-grid':()=>monthlyPorProyecto('escr-proy-grid','em','escrByClass','und'),
+  'entr-proy-grid':()=>monthlyPorProyecto('entr-proy-grid','nm','entrByClass','und')
+};
+function toggleProy(h){
+  const gid=h.getAttribute('data-grid');
+  const wrap=document.getElementById(gid+'-wrap');
+  const open=wrap.style.display!=='none';
+  if(open){ wrap.style.display='none'; h.classList.remove('open'); return; }
+  wrap.style.display='block'; h.classList.add('open');
+  if(!_proyBuilt[gid]){ _proyBuilt[gid]=1; try{_proyRender[gid]();}catch(err){if(window.console)console.error(err);} }
+  // re-dimensionar charts que se crearon dentro del contenedor antes oculto
+  (window.requestAnimationFrame||setTimeout)(()=>{charts.forEach(c=>{try{c.resize();}catch(e){}});});
+}
+
+function renderAll(){
+  if(!D)return;
+  NM=D.months.length; CUT=D.cutIdx;
+  /* teardown previo: permite recargar datos sin duplicar gráficas */
+  try{ if(window.__io){window.__io.disconnect(); window.__io=null;} }catch(e){}
+  try{ charts.forEach(c=>{try{c.destroy();}catch(e){}}); charts.length=0; }catch(e){}
+  ['acc-proy-grid','prom-ir-grid','prom-proy-grid','ventas-ir-grid','ventas-proy-grid','escr-ir-grid','escr-proy-grid','entr-ir-grid','entr-proy-grid']
+    .forEach(id=>{var g=document.getElementById(id); if(g) g.innerHTML='';});
+
+  if(!window.__cdlReg){Chart.register(ChartDataLabels);window.__cdlReg=1;}
+  Chart.defaults.font.family="'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+  Chart.defaults.animation=false;
+  function step(fn){try{fn();}catch(e){if(window.console)console.error(e);}}
+  // 1) Inmediato: KPIs + Resumen ejecutivo (lo primero que ve el usuario)
+  step(buildKPIs);
+  step(()=>ventasPlanPorAnio('cVentas','tVentas'));
+  step(()=>execYear('cEscrituras','tEscrituras',D.agg.escrMonthly,true));
+  step(()=>execYear('cEntregas','tEntregas',D.agg.entrMonthly,true));
+  step(participacion);
+  step(escrDinero);
+  step(()=>escrDineroMensual('cEscDineroMes','tEscDineroMes'));
+  if(!window.__navInit){step(initNav);window.__navInit=1;}
+  // 2) Diferido: cada sección se construye al entrar en viewport (lazy)
+  
+// === Meta Ideal vs Real (flujo mensual) ===
+function idealRealMonthly(canvasId,tableId,series,unitLabel){
+  if(!series){return false;}
+  const ideal=series.ideal||[], real=series.real||[];
+  // recorte: desde el primer mes con dato (ideal o real) hasta el corte
+  let lo=-1;for(let i=0;i<NM;i++){if((ideal[i]||0)>0||(real[i]||0)>0){lo=i;break;}}
+  if(lo<0) lo=0;
+  let hi=CUT;
+  // si la meta ideal se extiende más allá del corte, mostrarla igual
+  for(let i=NM-1;i>CUT;i--){if((ideal[i]||0)>0){hi=i;break;}}
+  if(hi<lo) hi=Math.min(NM-1,lo);
+  const k=[];for(let i=lo;i<=hi;i++)k.push(i);
+  const labels=k.map(i=>D.months[i]);
+  const iData=k.map(i=>ideal[i]||0);
+  const rData=k.map(i=>i<=CUT?(real[i]||0):null);
+  const hayReal=real.reduce((x,y)=>x+(y||0),0)>0;
+  const u=unitLabel||'und';
+  const many=labels.length>14;
+  mk(canvasId,{type:'bar',data:{labels,datasets:[
+    {label:'Meta ideal',backgroundColor:C.mi,data:iData,order:1},
+    {label:'Real',backgroundColor:C.rl,data:rData,order:1}
+  ]},options:opts({scales:{y:{ticks:{callback:fU}},x:{ticks:{maxRotation:90,minRotation:60,font:{size:9},autoSkip:true,maxTicksLimit:24}}},plugins:{tooltip:{callbacks:{title:it=>labels[it[0].dataIndex],label:c=>c.dataset.label+': '+fU(c.parsed.y)+' '+u+(c.dataset.label==='Real'&&iData[c.dataIndex]>0?' ('+Math.round(100*c.parsed.y/iData[c.dataIndex])+'% de meta)':'')}},datalabels:{display:c=>{const v=c.dataset.data[c.dataIndex];return typeof v==='number'&&v>0;},anchor:'end',align:'end',color:'#333',font:{size:many?7:9,weight:'bold'},formatter:(v)=>(typeof v==='number'&&v>0)?fU(v):''}}})});
+  dataTable(tableId,labels,[{name:'Meta ideal',data:iData},{name:'Real',data:rData}],'u');
+  return hayReal;
+}
+
+// === Meta ideal vs Real POR PROYECTO (flujo mensual, estilo cumplimiento) ===
+function idealRealCard(canvasId,tableId,ideal,real,unitLabel){
+  let lo=-1;for(let i=0;i<NM;i++){if((ideal[i]||0)>0||(real[i]||0)>0){lo=i;break;}}
+  if(lo<0) lo=0;
+  let hi=CUT;for(let i=NM-1;i>CUT;i--){if((ideal[i]||0)>0){hi=i;break;}}
+  if(hi<lo) hi=Math.min(NM-1,lo);
+  const k=[];for(let i=lo;i<=hi;i++)k.push(i);
+  const labels=k.map(i=>D.months[i]);
+  const iData=k.map(i=>ideal[i]||0);
+  const rData=k.map(i=>i<=CUT?(real[i]||0):null);
+  const u=unitLabel||'und';
+  const many=labels.length>14;
+  mk(canvasId,{type:'bar',data:{labels,datasets:[
+    {label:'Meta ideal',backgroundColor:C.mi,data:iData,order:1},
+    {label:'Real',backgroundColor:C.rl,data:rData,order:1}
+  ]},options:opts({scales:{y:{ticks:{callback:fU}},x:{ticks:{maxRotation:90,minRotation:60,font:{size:9},autoSkip:true,maxTicksLimit:24}}},plugins:{tooltip:{callbacks:{title:it=>labels[it[0].dataIndex],label:c=>c.dataset.label+': '+fU(c.parsed.y)+' '+u+(c.dataset.label==='Real'&&iData[c.dataIndex]>0?' ('+Math.round(100*c.parsed.y/iData[c.dataIndex])+'% de meta)':'')}},datalabels:{display:c=>{const v=c.dataset.data[c.dataIndex];return typeof v==='number'&&v>0;},anchor:'end',align:'end',color:'#333',font:{size:many?7:9,weight:'bold'},formatter:(v)=>(typeof v==='number'&&v>0)?fU(v):''}}})});
+  dataTable(tableId,labels,[{name:'Meta ideal',data:iData},{name:'Real',data:rData}],'u');
+}
+function idealRealVentasPorProyecto(gridId){
+  const g=document.getElementById(gridId);if(!g)return;const tasks=[];
+  D.projects.forEach((p,i)=>{
+    const iM=monthlyFromAcc(p.accIdeal), rM=monthlyFromAcc(p.accReal);
+    makeCard(g,p.name+' ('+p.cls+')','vir'+i,'tvir'+i,false);
+    tasks.push(()=>idealRealCard('vir'+i,'tvir'+i,iM,rM,'und'));
+  });
+  tasks.forEach(t=>step(t));
+}
+function idealRealHitoPorProyecto(gridId,prefix,hito){
+  const g=document.getElementById(gridId);if(!g)return;const tasks=[];
+  D.projects.forEach((p,i)=>{
+    const s=D.projIvR[p.name]&&D.projIvR[p.name][hito];if(!s)return;
+    makeCard(g,p.name+' ('+p.cls+')',prefix+i,'t'+prefix+i,false);
+    tasks.push(()=>idealRealCard(prefix+i,'t'+prefix+i,s.ideal,s.real,'und'));
+  });
+  tasks.forEach(t=>step(t));
+}
+const builders={
+    'acc-cons':()=>accChart('cConsolidado','tConsolidado',D.consAcc.ideal,D.consAcc.min,D.consAcc.real),
+    'acc-proy':accPorProyecto,
+    'prom-cons':()=>{idealRealMonthly('cPromIR','tPromIR',D.idealVsReal.promesas,'und');monthly('cPromCons','tPromCons',D.agg.promesasMonthly,'und');},
+    'prom-proy':()=>{idealRealHitoPorProyecto('prom-ir-grid','pir','promesas');},
+    'ventas-cons':()=>{ventasCumplimiento('cVentasCumpl','tVentasCumpl');monthly('cVentasMes','tVentasMes',D.agg.ventasMonthly,'und',true);},
+    'ventas-proy':()=>{idealRealVentasPorProyecto('ventas-ir-grid');},
+    'escr-cons':()=>{idealRealMonthly('cEscrIR','tEscrIR',D.idealVsReal.escrituras,'und');monthly('cEscrMes','tEscrMes',D.agg.escrMonthly,'und');},
+    'escr-proy':()=>{idealRealHitoPorProyecto('escr-ir-grid','eir','escrituras');},
+    'entr-cons':()=>{idealRealMonthly('cEntrIR','tEntrIR',D.idealVsReal.entregas,'und');monthly('cEntrMes','tEntrMes',D.agg.entrMonthly,'und');},
+    'entr-proy':()=>{idealRealHitoPorProyecto('entr-ir-grid','nir','entregas');}
+  };
+  const built={};
+  function build(id){ if(built[id])return; built[id]=1; step(builders[id]); }
+  if('IntersectionObserver' in window){
+    const io=window.__io=new IntersectionObserver((ents)=>{ents.forEach(e=>{if(e.isIntersecting){build(e.target.id);io.unobserve(e.target);}});},{rootMargin:'80px'});
+    Object.keys(builders).forEach(id=>{const el=document.getElementById(id);if(el)io.observe(el);});
+  } else { Object.keys(builders).forEach(build); }   // fallback
+}
+
+/* ====================================================================== */
+/*  FUENTE DE DATOS DIN\u00c1MICA  \u00b7  Grupo Accanto                              */
+/*  Un solo transformador buildD() alimenta los dos modos:                */
+/*    A) Excel en el navegador (SheetJS)                                  */
+/*    B) Google Sheets en vivo (fetch a un Apps Script)                   */
+/*  La capa visual (gr\u00e1ficas/estilos) NO cambia: solo cambia el origen.   */
+/* ====================================================================== */
+
+/* Opcional: pega aqu\u00ed tu URL /exec de Apps Script para que el tablero    */
+/* cargue autom\u00e1ticamente los datos en vivo al abrir.                     */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7lk09QNjFWHRyzpo6-DUtIb-TGe2pkLYLLgtz8a-s-6uoqN18F-GC3tfhD6bqsoPyCQ/exec";
+
+function setStatus(msg, kind){
+  var t=document.getElementById('ds-status'), d=document.getElementById('ds-dot');
+  if(t) t.textContent=msg;
+  if(d) d.className='ds-dot'+(kind?(' '+kind):'');
+}
+
+/* ---------------------------------------------------------------------- */
+/*  buildD(hitos, gac, cutMonth)                                          */
+/*  hitos: matriz 2D de la hoja "HITOS CONSOLIDADOS" (fila 0 = fila 1)     */
+/*  gac:   matriz 2D de "Ventas acum. GRUPO ACCANTO"                       */
+/*  cutMonth: texto del mes de corte (p.ej. "MAY-2026")                    */
+/*  Devuelve el contrato D que consumen las ~40 funciones de render.       */
+/* ---------------------------------------------------------------------- */
+function buildD(hitos, gac, cutMonth){
+  hitos = hitos || []; gac = gac || [];
+  const get=(r,c)=> (hitos[r]!=null && hitos[r][c]!==undefined) ? hitos[r][c] : null;
+  const norm=v=> v==null ? '' : String(v).trim().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const toNum=v=>{ if(typeof v==='number') return v; if(v==null||v==='') return 0;
+      var n=parseFloat(String(v).replace(/[, ]/g,'')); return isNaN(n)?0:n; };
+
+  /* meses: fila \u00edndice 1 (fila 2 de la hoja), columnas desde G (\u00edndice 6) */
+  const months=[], mcols=[];
+  for(let c=6;;c++){ const v=get(1,c); if(v==null||v==='') break; months.push(String(v).trim()); mcols.push(c); }
+  const NM=months.length;
+  let cutIdx=months.indexOf(cutMonth!=null?String(cutMonth).trim():''); if(cutIdx<0) cutIdx=NM-1;
+  const rowraw=r=> mcols.map(c=>{ const v=get(r,c); return (v===''||v===undefined)?null:v; });
+  const numArr=a=> a.map(toNum);
+  const MAXR=hitos.length;
+
+  /* deteccion automatica de proyectos (encabezado = fila con D = "Ventas Acum. ritmo ideal (factibilidad)") */
+  /* se excluye el bloque consolidado "Grupo Accanto" (no tiene clase VIS/NO VIS encima) */
+  const projRowsAll=[]; for(let r=0;r<MAXR;r++){ if(norm(get(r,3))==='ventas acum. ritmo ideal (factibilidad)') projRowsAll.push(r); }
+  const isConsolidated=hr=>{ const c=get(hr-1,1); return (c==null||String(c).trim()==='') || norm(get(hr,1))==='grupo accanto'; };
+  const projNorm=new Set(projRowsAll.filter(hr=>!isConsolidated(hr)).map(r=>norm(get(r,1))));
+
+  /* bloque de dinero: fila cuyo col B coincide con un proyecto y col C es num\u00e9rico */
+  const money={};
+  for(let r=0;r<MAXR;r++){ const b=get(r,1);
+    if(b && projNorm.has(norm(b)) && typeof get(r,2)==='number'){
+      money[norm(b)]={viv:toNum(get(r,2)), com:toNum(get(r,3)), uv:toNum(get(r,4)), uc:toNum(get(r,5))};
+    } }
+
+  const METRIC={'ventas real':'ventasReal','promesas meta ideal':'promIdeal','promesas real':'promReal',
+    'escrituras meta ideal':'escrIdeal','escrituras real':'escrReal',
+    'entregas meta ideal':'entrIdeal','entregas real':'entrReal'};
+  const MILES=new Set(['rph','cto + decenal','planeacion tributaria integracion patrimonios']);
+
+  const projects=[];
+  for(let pi=0; pi<projRowsAll.length; pi++){
+    const hr=projRowsAll[pi];
+    if(isConsolidated(hr)) continue;
+    const name=get(hr,1), cls=get(hr-1,1);
+    const end = (pi+1<projRowsAll.length) ? projRowsAll[pi+1] : MAXR;
+    let accIdeal=numArr(rowraw(hr)), accMin=new Array(NM).fill(0), accReal=new Array(NM).fill(0);
+    const secs={}, secOrder=[]; let cur=null; const milestones={};
+
+    for(let r=hr;r<end;r++){
+      const Cc=get(r,2), lab=norm(get(r,3));
+      if(lab==='ventas acum. ritmo minimo'){ accMin=numArr(rowraw(r)); continue; }
+      if(lab==='ventas acum. real'){ accReal=numArr(rowraw(r)); continue; }
+      if(lab.indexOf('ventas acum')===0) continue;
+      if(Cc!=null && Cc!=='' && norm(Cc)!==norm(name)){ cur=String(Cc).trim(); if(!secs[cur]){secs[cur]={}; secOrder.push(cur);} }
+      if(cur==null) continue;
+      if(METRIC[lab]){ secs[cur][METRIC[lab]]=rowraw(r); }
+      else if(MILES.has(lab)){ const mm=rowraw(r); let idx=mm.findIndex(v=>v!=null&&v!==0);
+        if(idx>=0) milestones[cur+'||'+String(get(r,3)).trim()]=months[idx]; }
+    }
+
+    const cofsec=sec=> norm(sec)==='comercio' ? 'Comercio' : cls;
+    const addcls=metric=>{ const out={'VIS':new Array(NM).fill(0),'NO VIS':new Array(NM).fill(0),'Comercio':new Array(NM).fill(0)};
+      secOrder.forEach(sec=>{ const arr=secs[sec][metric]; if(!arr) return; const k=cofsec(sec);
+        for(let i=0;i<NM;i++){ const v=arr[i]; if(v!=null) out[k][i]+=toNum(v); } }); return out; };
+    const sumsec=metric=>{ const tot=new Array(NM).fill(0);
+      secOrder.forEach(sec=>{ const arr=secs[sec][metric]; if(!arr) return;
+        for(let i=0;i<NM;i++){ const v=arr[i]; if(v!=null) tot[i]+=toNum(v); } }); return tot; };
+
+    const ventasByClass  = addcls('ventasReal');  /* real (la gr\u00e1fica corta en el corte) */
+    const promesasByClass= addcls('promIdeal');   /* cronograma (Meta Ideal) */
+    const escrByClass    = addcls('escrIdeal');
+    const entrByClass    = addcls('entrIdeal');
+
+    const promesasBySec={}; secOrder.forEach(sec=>{ const arr=secs[sec]['promIdeal'];
+      if(arr && arr.some(v=>v!=null&&v!==0)) promesasBySec[sec]=arr; });
+
+    const mny=money[norm(name)]||{}; const uv=mny.uv||0, uc=mny.uc||0;
+    const projIvR={ promesas:{ideal:sumsec('promIdeal'),real:sumsec('promReal')},
+                    escrituras:{ideal:sumsec('escrIdeal'),real:sumsec('escrReal')},
+                    entregas:{ideal:sumsec('entrIdeal'),real:sumsec('entrReal')} };
+
+    projects.push({ name, cls, accReal, accIdeal, accMin, promesasBySec,
+      ventasByClass, promesasByClass, escrByClass, entrByClass,
+      viviendaMiles:mny.viv||0, comercioMiles:mny.com||0, unidViv:uv, unidCom:uc, unidEscr:uv+uc,
+      milestones, _projIvR:projIvR });
+  }
+
+  /* agregados consolidados (suma por clase) */
+  const aggOf=field=>{ const o={'VIS':new Array(NM).fill(0),'NO VIS':new Array(NM).fill(0),'Comercio':new Array(NM).fill(0)};
+    projects.forEach(p=>['VIS','NO VIS','Comercio'].forEach(k=>{ for(let i=0;i<NM;i++) o[k][i]+=p[field][k][i]; })); return o; };
+  const agg={ ventasMonthly:aggOf('ventasByClass'), promesasMonthly:aggOf('promesasByClass'),
+              escrMonthly:aggOf('escrByClass'), entrMonthly:aggOf('entrByClass') };
+
+  /* consAcc: se LEE de la hoja "Ventas acum. GRUPO ACCANTO" (no se suma de proyectos) */
+  const gHdr={}; if(gac[2]){ for(let c=1;c<gac[2].length;c++){ const h=gac[2][c]; if(h!=null&&h!=='') gHdr[String(h).trim()]=c; } }
+  const gLab={}; for(let r=0;r<gac.length;r++){ const l=norm(gac[r]&&gac[r][0]); if(l) gLab[l]=r; }
+  const gacRow=ri=>{ const out=[]; let last=0, seen=false;
+    months.forEach(m=>{ const c=gHdr[m];
+      if(c==null){ out.push(seen?last:0); return; }
+      let v=(gac[ri]&&gac[ri][c]);
+      if(v==null||v===''||(typeof v==='string'&&v.charAt(0)==='#')){ out.push(seen?last:0); }
+      else { v=toNum(v); out.push(v); last=v; seen=true; } });
+    return out; };
+  const consAcc={
+    ideal: gLab['ritmo ideal (factibilidad)']!=null ? gacRow(gLab['ritmo ideal (factibilidad)']) : new Array(NM).fill(0),
+    min:   gLab['ritmo minimo']!=null ? gacRow(gLab['ritmo minimo']) : new Array(NM).fill(0),
+    real:  gLab['ventas real']!=null ? gacRow(gLab['ventas real']) : new Array(NM).fill(0)
+  };
+
+  /* KPIs */
+  const sumIf=(pred,f)=>projects.reduce((s,p)=>s+(pred(p)?p[f]:0),0);
+  const kpis={ visU:sumIf(p=>p.cls==='VIS','unidViv'), novisU:sumIf(p=>p.cls==='NO VIS','unidViv'),
+    comU:projects.reduce((s,p)=>s+p.unidCom,0),
+    visV:sumIf(p=>p.cls==='VIS','viviendaMiles'), novisV:sumIf(p=>p.cls==='NO VIS','viviendaMiles'),
+    comV:projects.reduce((s,p)=>s+p.comercioMiles,0) };
+
+  /* Meta Ideal vs Real (consolidado y por proyecto) */
+  const ivrOf=metric=>{ const ideal=new Array(NM).fill(0), real=new Array(NM).fill(0);
+    projects.forEach(p=>{ for(let i=0;i<NM;i++){ ideal[i]+=p._projIvR[metric].ideal[i]; real[i]+=p._projIvR[metric].real[i]; } });
+    return {ideal,real}; };
+  const idealVsReal={ promesas:ivrOf('promesas'), escrituras:ivrOf('escrituras'), entregas:ivrOf('entregas') };
+  const projIvR={}; projects.forEach(p=>{ projIvR[p.name]=p._projIvR; delete p._projIvR; });
+
+  return { months, cutIdx, cutMonth:(cutMonth!=null?String(cutMonth).trim():months[cutIdx]),
+           projects, agg, consAcc, kpis, idealVsReal, projIvR };
+}
+
+/* ---------- Modo A: Excel en el navegador (SheetJS) ---------- */
+async function cargarDesdeExcel(file){
+  setStatus('Leyendo Excel\u2026','load');
+  try{
+    const buf=await file.arrayBuffer();
+    const wb=XLSX.read(buf,{type:'array'});
+    const toArr=name=>{ const ws=wb.Sheets[name]; return ws?XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null}):null; };
+    const hitos=toArr('HITOS CONSOLIDADOS');
+    if(!hitos){ setStatus('No encontr\u00e9 la hoja "HITOS CONSOLIDADOS" en el archivo.','err'); return; }
+    const gac=toArr('Ventas acum. GRUPO ACCANTO')||[];
+    let cutMonth=null;
+    const pres=wb.Sheets['PRESENTACI\u00d3N HTML'];
+    if(pres && pres['A10']) cutMonth=pres['A10'].v;
+    D=buildD(hitos, gac, cutMonth);
+    renderAll();
+    setStatus('Datos cargados desde Excel \u00b7 Corte '+D.cutMonth+' \u00b7 '+D.projects.length+' proyectos','ok');
+  }catch(e){ console.error(e); setStatus('Error leyendo el Excel: '+e.message,'err'); }
+}
+
+/* ---------- Modo B: Google Sheets en vivo (Apps Script) ---------- */
+async function cargarDesdeAppsScript(url){
+  if(!url){ setStatus('Pega la URL /exec del Apps Script y pulsa Conectar.','err'); return; }
+  setStatus('Conectando con Google Sheets\u2026','load');
+  try{
+    const r=await fetch(url,{redirect:'follow'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const j=await r.json();
+    if(j.error) throw new Error(j.error);
+    D=buildD(j.hitos, j.gac||[], j.cutMonth);
+    renderAll();
+    setStatus('Datos en vivo desde Google Sheets \u00b7 Corte '+D.cutMonth+' \u00b7 '+D.projects.length+' proyectos','ok');
+  }catch(e){ console.error(e);
+    setStatus('No pude conectar ('+e.message+'). Revisa la URL /exec y que el despliegue sea p\u00fablico.','err'); }
+}
+
+/* ---------- Cableado de la barra + autoarranque ---------- */
+document.addEventListener('DOMContentLoaded',function(){
+  var fi=document.getElementById('ds-excel');
+  if(fi) fi.addEventListener('change',function(e){ if(e.target.files&&e.target.files[0]) cargarDesdeExcel(e.target.files[0]); });
+  var cb=document.getElementById('ds-connect');
+  var ui=document.getElementById('ds-url');
+  if(APPS_SCRIPT_URL && ui) ui.value=APPS_SCRIPT_URL;
+  if(cb) cb.addEventListener('click',function(){ cargarDesdeAppsScript(((ui&&ui.value)||'').trim()); });
+  if(ui) ui.addEventListener('keydown',function(e){ if(e.key==='Enter') cargarDesdeAppsScript(ui.value.trim()); });
+  if(APPS_SCRIPT_URL) cargarDesdeAppsScript(APPS_SCRIPT_URL);
+  else setStatus('Sin datos \u2014 carga tu Excel (bot\u00f3n) o con\u00e9ctate a Google Sheets.','idle');
+});
+
+</script></body></html>
